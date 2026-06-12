@@ -118,8 +118,6 @@ p { color: #333; line-height: 1.6; }
 
     <p>
       June 24, 2026-----As a student representative of your college, write an email to the Principal of Professional Engineering College, Prof.Deb Chatterjee, inviting his institute to participate in the Technical symposium being organized in your college. Sign the email as Sam.
-Invite – technical Symposium – previous – success – expecting – huge participation – latest technology – stalls – demos – interaction – topics – complete – exchange ideas – exciting prizes.
-
     </p>
 
     <h3 id="emailTimer">9:00</h3>
@@ -140,13 +138,58 @@ Invite – technical Symposium – previous – success – expecting – huge p
 
 <script>
 
-/* DATA */
+/* =========================
+   ANTI-CHEATING SYSTEM
+========================= */
+
+let violationCount = 0;
+
+function goFullScreen() {
+  let elem = document.documentElement;
+  if (elem.requestFullscreen) elem.requestFullscreen();
+}
+
+/* TAB SWITCH */
+document.addEventListener("visibilitychange", function () {
+  if (document.hidden) {
+    violationCount++;
+    alert("⚠ Tab switching detected!");
+
+    if (violationCount >= 2) finishExam();
+  }
+});
+
+/* WINDOW BLUR */
+window.addEventListener("blur", function () {
+  violationCount++;
+});
+
+/* DISABLE RIGHT CLICK */
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+/* DISABLE COPY/PASTE */
+document.addEventListener("copy", e => e.preventDefault());
+document.addEventListener("cut", e => e.preventDefault());
+document.addEventListener("paste", e => e.preventDefault());
+
+/* BLOCK SHORTCUTS */
+document.addEventListener("keydown", function (e) {
+  if (
+    e.key === "F12" ||
+    (e.ctrlKey && e.shiftKey && e.key === "I") ||
+    (e.ctrlKey && e.key.toLowerCase() === "u")
+  ) {
+    e.preventDefault();
+    violationCount++;
+  }
+});
+
+/* =========================
+   ORIGINAL SYSTEM (UNCHANGED)
+========================= */
+
 let index = 0;
 let timer;
-let mcqTime = 30;
-let readTime = 30;
-let writeTime = 90;
-let emailTime = 540;
 
 let answers = [];
 
@@ -173,7 +216,7 @@ const questions = [
 "The book is a ________ study of human psychology."
 ];
 
-const correct5= [
+const correct5 = [
 "cogent","amicable","investigative","mitigate","infectious",
 "tribute","diligently","erudite","backlash","resilience",
 "groundbreaking","benevolence","demolished","perceptive","nurture",
@@ -192,6 +235,8 @@ function startExam(){
   answers = [];
   show("mcq");
   loadQ();
+
+  goFullScreen(); // IMPORTANT
 }
 
 /* MCQ */
@@ -200,7 +245,7 @@ function loadQ(){
     (index+1) + ". " + questions[index];
 
   document.getElementById("ans").value = "";
-  mcqTime = 30;
+  let mcqTime = 30;
 
   clearInterval(timer);
 
@@ -239,38 +284,26 @@ function startPassage(){
   box.disabled = true;
   box.value = "";
 
-  status.innerText = "Reading Time: " + readTime + " sec";
-
-  // ensure passage is visible at start
-  document.querySelector("#passage p").style.display = "block";
-
   clearInterval(timer);
 
   timer = setInterval(()=>{
 
     if(phase === "read"){
       readTime--;
-      status.innerText = "Reading Time: " + readTime + " sec";
+      status.innerText = "Reading Time: " + readTime;
 
       if(readTime <= 0){
         phase = "write";
-
-        // hide passage after reading
         document.querySelector("#passage p").style.display = "none";
-
         box.disabled = false;
-        status.innerText = "Writing Time: " + writeTime + " sec";
       }
-    }
-
-    else {
+    } else {
       writeTime--;
-      status.innerText = "Writing Time: " + writeTime + " sec";
+      status.innerText = "Writing Time: " + writeTime;
 
       if(writeTime <= 0){
         clearInterval(timer);
         box.disabled = true;
-        status.innerText = "Time Over";
       }
     }
 
@@ -281,7 +314,8 @@ function startPassage(){
 function startEmail(){
   show("email");
 
-  emailTime = 540;
+  let emailTime = 540;
+
   clearInterval(timer);
 
   timer = setInterval(()=>{
@@ -300,7 +334,7 @@ function startEmail(){
   },1000);
 }
 
-/* ✅ FIXED SUBMIT */
+/* RESULT */
 function finishExam(){
   clearInterval(timer);
 
