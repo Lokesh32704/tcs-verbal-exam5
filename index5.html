@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TCS Verbal Ability - Fixed Full System</title>
+
+<style>
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, #eef2f7, #d9e4f5);
+}
+
+#topBar {
+  background: linear-gradient(90deg, #0b3d91, #1e5eff);
+  color: white;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+#timer {
+  background: rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.section { display: none; padding: 25px; }
+.active { display: block; }
+
+.card {
+  background: rgba(255,255,255,0.95);
+  padding: 25px;
+  margin: 20px auto;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-width: 850px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+textarea { height: 180px; }
+
+button {
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #0b3d91, #1e5eff);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+button:hover {
+  transform: scale(1.02);
+}
+
+p { color: #333; line-height: 1.6; }
+
+</style>
+</head>
+
+<body>
+
+<div id="topBar">
+  <div>📘 TCS Verbal Ability</div>
+  <div id="timer">Time: --</div>
+</div>
+
+<!-- START -->
+<div id="start" class="section active">
+  <div class="card">
+    <h2>Start Exam</h2>
+    <button onclick="startExam()">Begin</button>
+  </div>
+</div>
+
+<!-- MCQ -->
+<div id="mcq" class="section">
+  <div class="card">
+    <h2>Fill in the Blanks</h2>
+    <p id="qText"></p>
+    <input id="ans">
+    <button onclick="nextQ()">Next</button>
+  </div>
+</div>
+
+<!-- PASSAGE -->
+<div id="passage" class="section">
+  <div class="card">
+    <h2>Passage Writing</h2>
+
+    <h3>📖 Read (30 sec)</h3>
+    <p>
+     As digital technologies become more integrated into daily life, cybersecurity has emerged as a major concern. Cybercriminals employ sophisticated methods to steal sensitive information and disrupt services. Organizations invest in firewalls, encryption, and employee training to strengthen their defenses. Individuals are encouraged to use strong passwords and enable multi-factor authentication. Continuous vigilance and regular system updates remain essential for protecting data from evolving cyber threats.
+    </p>
+
+    <h3 id="passageStatus">Reading Time: 30 sec</h3>
+
+    <textarea id="passageAns" disabled></textarea>
+
+    <button onclick="startEmail()">Next Section</button>
+  </div>
+</div>
+
+<!-- EMAIL -->
+<div id="email" class="section">
+  <div class="card">
+    <h2>Email Writing Task</h2>
+
+    <p>
+      June 24, 2026-----As a student representative of your college, write an email to the Principal of Professional Engineering College, Prof.Deb Chatterjee, inviting his institute to participate in the Technical symposium being organized in your college. Sign the email as Sam.
+Invite – technical Symposium – previous – success – expecting – huge participation – latest technology – stalls – demos – interaction – topics – complete – exchange ideas – exciting prizes.
+
+    </p>
+
+    <h3 id="emailTimer">9:00</h3>
+
+    <textarea id="emailAns"></textarea>
+
+    <button onclick="finishExam()">Submit Exam</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="section">
+  <div class="card">
+    <h2>Result</h2>
+    <p id="score"></p>
+  </div>
+</div>
+
+<script>
+
+/* DATA */
+let index = 0;
+let timer;
+let mcqTime = 30;
+let readTime = 30;
+let writeTime = 90;
+let emailTime = 540;
+
+let answers = [];
+
+const questions = [
+"The lawyer presented a ________ argument that swayed the jury.",
+"Prolonged negotiations finally led to a ________ agreement.",
+"The journalist's ________ reporting exposed the corruption scandal.",
+"The new policy is designed to ________ economic disparities.",
+"His ________ enthusiasm motivated everyone around him.",
+"The monument stands as a ________ to the nation's heroes.",
+"The team worked ________ to meet the tight deadline.",
+"The professor's ________ lectures were highly sought after by students.",
+"The company faced ________ for its unethical practices.",
+"She showed great ________ in handling the difficult situation.",
+"The results of the study were ________ and opened new avenues for research.",
+"The king ruled with ________ and justice.",
+"The old building was ________ to make way for a modern complex.",
+"His ________ remarks revealed his deep knowledge of the subject.",
+"The organization aims to ________ a culture of innovation.",
+"The witness's account was full of ________ details.",
+"The athlete's performance was nothing short of ________.",
+"The committee recommended ________ changes to the existing framework.",
+"Despite the setback, she displayed remarkable ________.",
+"The book is a ________ study of human psychology."
+];
+
+const correct5= [
+"cogent","amicable","investigative","mitigate","infectious",
+"tribute","diligently","erudite","backlash","resilience",
+"groundbreaking","benevolence","demolished","perceptive","nurture",
+"extraneous","phenomenal","sweeping","tenacity","seminal"
+];
+
+/* NAV */
+function show(id){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+/* START */
+function startExam(){
+  index = 0;
+  answers = [];
+  show("mcq");
+  loadQ();
+}
+
+/* MCQ */
+function loadQ(){
+  document.getElementById("qText").innerText =
+    (index+1) + ". " + questions[index];
+
+  document.getElementById("ans").value = "";
+  mcqTime = 30;
+
+  clearInterval(timer);
+
+  timer = setInterval(()=>{
+    mcqTime--;
+    document.getElementById("timer").innerText = "Time: " + mcqTime;
+
+    if(mcqTime <= 0) nextQ();
+  },1000);
+}
+
+function nextQ(){
+  answers[index] = document.getElementById("ans").value.toLowerCase().trim();
+
+  clearInterval(timer);
+  index++;
+
+  if(index < questions.length){
+    loadQ();
+  } else {
+    startPassage();
+  }
+}
+
+/* PASSAGE */
+function startPassage(){
+  show("passage");
+
+  readTime = 30;
+  writeTime = 90;
+  let phase = "read";
+
+  document.getElementById("passageAns").disabled = true;
+
+  timer = setInterval(()=>{
+    if(phase === "read"){
+      readTime--;
+      if(readTime <= 0){
+        phase = "write";
+        document.getElementById("passageAns").disabled = false;
+      }
+    } else {
+      writeTime--;
+      if(writeTime <= 0){
+        clearInterval(timer);
+        document.getElementById("passageAns").disabled = true;
+      }
+    }
+  },1000);
+}
+
+/* EMAIL */
+function startEmail(){
+  show("email");
+
+  emailTime = 540;
+  clearInterval(timer);
+
+  timer = setInterval(()=>{
+    emailTime--;
+
+    let m = Math.floor(emailTime/60);
+    let s = emailTime%60;
+
+    document.getElementById("emailTimer").innerText =
+      m + ":" + (s<10?"0"+s:s);
+
+    if(emailTime <= 0){
+      clearInterval(timer);
+      document.getElementById("emailAns").disabled = true;
+    }
+  },1000);
+}
+
+/* ✅ FIXED SUBMIT */
+function finishExam(){
+  clearInterval(timer);
+
+  let score = 0;
+
+  for(let i=0;i<correct5.length;i++){
+    if(answers[i] === correct5[i]) score++;
+  }
+
+  show("result");
+
+  document.getElementById("score").innerText =
+    "MCQ Score: " + score + " / 20";
+}
+
+</script>
+
+</body>
+</html>
