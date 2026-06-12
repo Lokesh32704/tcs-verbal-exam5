@@ -229,26 +229,51 @@ function nextQ(){
 function startPassage(){
   show("passage");
 
-  readTime = 30;
-  writeTime = 90;
   let phase = "read";
+  let readTime = 30;
+  let writeTime = 90;
 
-  document.getElementById("passageAns").disabled = true;
+  const status = document.getElementById("passageStatus");
+  const box = document.getElementById("passageAns");
+
+  box.disabled = true;
+  box.value = "";
+
+  status.innerText = "Reading Time: " + readTime + " sec";
+
+  // ensure passage is visible at start
+  document.querySelector("#passage p").style.display = "block";
+
+  clearInterval(timer);
 
   timer = setInterval(()=>{
+
     if(phase === "read"){
       readTime--;
+      status.innerText = "Reading Time: " + readTime + " sec";
+
       if(readTime <= 0){
         phase = "write";
-        document.getElementById("passageAns").disabled = false;
-      }
-    } else {
-      writeTime--;
-      if(writeTime <= 0){
-        clearInterval(timer);
-        document.getElementById("passageAns").disabled = true;
+
+        // hide passage after reading
+        document.querySelector("#passage p").style.display = "none";
+
+        box.disabled = false;
+        status.innerText = "Writing Time: " + writeTime + " sec";
       }
     }
+
+    else {
+      writeTime--;
+      status.innerText = "Writing Time: " + writeTime + " sec";
+
+      if(writeTime <= 0){
+        clearInterval(timer);
+        box.disabled = true;
+        status.innerText = "Time Over";
+      }
+    }
+
   },1000);
 }
 
